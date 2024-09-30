@@ -5,4 +5,6 @@ import org.springframework.http.ResponseEntity;
 public interface ProductService {
     public ResponseEntity<?> getProductDetailsById(Long productId);
     public ResponseEntity<?> getAllProductDetails();
+
+    public ResponseEntity<?> getProductDetailsByName(String productName);
 }

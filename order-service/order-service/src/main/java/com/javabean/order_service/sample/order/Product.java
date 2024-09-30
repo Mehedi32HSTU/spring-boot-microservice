@@ -2,15 +2,13 @@ package com.javabean.order_service.sample.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class Order {
+public class Product {
     private Long id;
-    private String productName;
-    private Long customerId;
-    private int quantity;
+    private String name;
+    private String category;
     private double price;
+    private int stock;
 }

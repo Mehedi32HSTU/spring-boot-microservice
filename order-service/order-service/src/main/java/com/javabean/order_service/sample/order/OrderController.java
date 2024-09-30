@@ -1,10 +1,7 @@
 package com.javabean.order_service.sample.order;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/controller")
@@ -13,6 +10,11 @@ public class OrderController {
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
+    }
+
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResponseEntity<?> createOrder(@RequestBody Order order) {
+        return orderService.createOrder(order);
     }
 
     @RequestMapping(value = "/{orderId}", method = RequestMethod.GET)

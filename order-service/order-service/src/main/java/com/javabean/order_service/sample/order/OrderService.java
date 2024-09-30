@@ -5,4 +5,6 @@ import org.springframework.http.ResponseEntity;
 public interface OrderService {
     public ResponseEntity<?> getOrderDetailsById(Long orderId);
     public ResponseEntity<?> getAllOrderDetails();
+
+    public ResponseEntity<?> createOrder(Order order);
 }

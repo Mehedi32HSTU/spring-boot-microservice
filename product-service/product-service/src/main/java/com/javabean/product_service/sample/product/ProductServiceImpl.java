@@ -49,6 +49,27 @@ public class ProductServiceImpl implements ProductService{
         }
     }
 
+    @Override
+    public ResponseEntity<?> getProductDetailsByName(String productName) {
+        try {
+            logger.info("getProductDetailsByName Method is Called");
+//            getDummyProductData().stream().filter(product -> Objects.equals(product.getName(), productName)).findFirst().get();
+            Optional<Product> product = getDummyProductData().stream()
+                    .filter(prod -> Objects.equals(prod.getName(), productName)).findFirst();
+            if(!product.isPresent()) {
+                logger.info("Product Not Found for Id : "+productName);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new MessageResponse("Product Not Found for Name : " + productName));
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(product.get());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Exception "+e.getMessage() +" Has Occurred in getProductDetailsByName Method");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Exception "+e.getMessage() +" Has Occurred"));
+        }
+    }
+
     private List<Product> getDummyProductData() {
         List<Product> products = new ArrayList<>();
 
