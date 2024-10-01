@@ -17,8 +17,8 @@ import java.util.Optional;
 public class OrderServiceImpl implements OrderService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String CUSTOMER_CONTROLLER = "http://CUSTOMER-SERVICE/customer-service/controller";
-    private final String PRODUCT_CONTROLLER = "http://PRODUCT-SERVICE/product-service/controller";
+    private final String CUSTOMER_CONTROLLER = "http://API-GATEWAY/customer-service/controller";
+    private final String PRODUCT_CONTROLLER = "http://API-GATEWAY/product-service/controller";
     @Autowired
     private RestTemplate restTemplate;
     @Override
