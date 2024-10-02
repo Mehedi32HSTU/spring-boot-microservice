@@ -48,6 +48,9 @@ management:
     web:
       exposure:
         include: hystrix.stream
+  endpoint:
+    hystrix:
+      enabled: true
 
 hystrix:
   command:
