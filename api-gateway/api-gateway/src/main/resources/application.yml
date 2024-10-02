@@ -13,20 +13,53 @@ spring:
           uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/product-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: productService
+                fallbackuri: forward:/fallback/product
 
         - id: order-service
           uri: lb://ORDER-SERVICE
           predicates:
             - Path=/order-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: orderService
+                fallbackuri: forward:/fallback/order
 
         - id: customer-service
           uri: lb://CUSTOMER-SERVICE
           predicates:
             - Path=/customer-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: customerService
+                fallbackuri: forward:/fallback/customer
     discovery:
       locator:
         enabled: true # Enable service discovery for routing
         lower-case-service-id: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+      circuitBreaker:
+        requestVolumeThreshold: 10
+        sleepWindowInMilliseconds: 10000
+        errorThresholdPercentage: 50
 
 eureka:
   client:
