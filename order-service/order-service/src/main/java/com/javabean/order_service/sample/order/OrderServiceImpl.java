@@ -3,6 +3,8 @@ package com.javabean.order_service.sample.order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,11 +17,16 @@ import java.util.Optional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String CUSTOMER_CONTROLLER = "http://API-GATEWAY/customer-service/controller";
-    private final String PRODUCT_CONTROLLER = "http://API-GATEWAY/product-service/controller";
+
+    @Value("${com.javabeans.customer.controller.url}")
+    private String CUSTOMER_CONTROLLER;
+
+    @Value("${com.javabeans.product.controller.url}")
+    private String PRODUCT_CONTROLLER;
+
     @Autowired
+    @Lazy
     private RestTemplate restTemplate;
     @Override
     public ResponseEntity<?> getOrderDetailsById(Long orderId) {
