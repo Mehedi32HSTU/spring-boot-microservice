@@ -44,13 +44,12 @@ spring:
         lower-case-service-id: true
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: hystrix.stream
   endpoint:
+    health:
+      show-details: always
     hystrix:
-      enabled: true
+      stream:
+        enabled: true
 
 hystrix:
   command:
