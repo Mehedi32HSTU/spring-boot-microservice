@@ -10,7 +10,6 @@ import java.util.Date;
 
 @SpringBootApplication
 @RestController("/")
-@RefreshScope
 public class CustomerServiceApplication {
 	public static long appStartTime;
 	public static void main(String[] args) {

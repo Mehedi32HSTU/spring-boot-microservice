@@ -1,4 +1,4 @@
-package com.javabean.customer_service;
+package com.javabean.product_service.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;

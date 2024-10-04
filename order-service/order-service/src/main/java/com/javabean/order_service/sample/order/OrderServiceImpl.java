@@ -1,9 +1,9 @@
 package com.javabean.order_service.sample.order;
 
+import com.javabean.order_service.config.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,8 @@ import java.util.Optional;
 @Service
 public class OrderServiceImpl implements OrderService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Value("${com.javabeans.customer.controller.url}")
-    private String CUSTOMER_CONTROLLER;
-
-    @Value("${com.javabeans.product.controller.url}")
-    private String PRODUCT_CONTROLLER;
+    @Autowired
+    private ApplicationProperties applicationProperties;
 
     @Autowired
     @Lazy
@@ -87,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
 
     private Product getProductDetails(String productName) {
         try {
-            return  restTemplate.getForObject(PRODUCT_CONTROLLER + "?name=" + productName, Product.class);
+            return  restTemplate.getForObject(applicationProperties.getProductControllerUrl() + "?name=" + productName, Product.class);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Exception "+e.getMessage() +" Has Occurred in getProductDetails Method");
@@ -96,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
     }
     private Customer getCustomerDetails(Long customerId) {
         try {
-            return restTemplate.getForObject(CUSTOMER_CONTROLLER + "/" + customerId, Customer.class);
+            return restTemplate.getForObject(applicationProperties.getCustomerControllerUrl() + "/" + customerId, Customer.class);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Exception "+e.getMessage() +" Has Occurred in getCustomerDetails Method");
