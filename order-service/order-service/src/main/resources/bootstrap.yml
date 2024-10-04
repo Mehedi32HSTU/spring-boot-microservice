@@ -1,0 +1,4 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:${com.javabeans.config.port:8888}
