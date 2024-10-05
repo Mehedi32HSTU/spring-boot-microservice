@@ -47,12 +47,25 @@ management:
         enabled: true
 
 hystrix:
+  threadpool:
+    productServiceThreadPool:
+      coreSize: 10 # Thread pool size for product service
+      maxQueueSize: 5 # Queue size limit
+    orderServiceThreadPool:
+      coreSize: 10 # Thread pool size for order service
+      maxQueueSize: 5 # Queue size limit
+    customerServiceThreadPool:
+      coreSize: 10 # Thread pool size for customer service
+      maxQueueSize: 5 # Queue size limit
+
   command:
     fallbackcmd:
       execution:
         isolation:
           thread:
             timeoutInMilliseconds: 5000
+          strategy: THREAD  # Use THREAD for thread isolation (bulkhead)
+        isolationStrategy: THREAD
       circuitBreaker:
         requestVolumeThreshold: 10
         sleepWindowInMilliseconds: 10000
