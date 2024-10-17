@@ -1,0 +1,7 @@
+api:
+  keys:
+    product-service: product-service-api-key
+    order-service: order-service-api-key
+    customer-service: customer-service-api-key
+    # Add more services here as needed
+
