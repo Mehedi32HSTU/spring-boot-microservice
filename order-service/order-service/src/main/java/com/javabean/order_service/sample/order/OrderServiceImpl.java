@@ -5,8 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -83,7 +82,15 @@ public class OrderServiceImpl implements OrderService {
 
     private Product getProductDetails(String productName) {
         try {
-            return  restTemplate.getForObject(applicationProperties.getProductControllerUrl() + "?name=" + productName, Product.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("API-Key", "F18dneaBYiLEwLSAv66gMJsy01KjmjCupl1khfhAm7uPxPu5Qk+nNUHsvxeFAOe6");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            String url = applicationProperties.getProductControllerUrl() + "?name=" + productName;
+            ResponseEntity<Product> response = restTemplate.exchange( url, HttpMethod.GET, entity, Product.class);
+
+            return response.getBody();
+//            return  restTemplate.getForObject(applicationProperties.getProductControllerUrl() + "?name=" + productName, Product.class);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Exception "+e.getMessage() +" Has Occurred in getProductDetails Method");
@@ -92,7 +99,14 @@ public class OrderServiceImpl implements OrderService {
     }
     private Customer getCustomerDetails(Long customerId) {
         try {
-            return restTemplate.getForObject(applicationProperties.getCustomerControllerUrl() + "/" + customerId, Customer.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("API-Key", "Ek/z15ebG/AsFYgOSuRU8vmIBM/JnOhoPHFyZF8bJc3XEb+RRQqf9vf2WwCDtJ9G");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            String url = applicationProperties.getCustomerControllerUrl() + "/" + customerId;
+            ResponseEntity<Customer> response = restTemplate.exchange( url, HttpMethod.GET, entity, Customer.class);
+            return response.getBody();
+//            return restTemplate.getForObject(applicationProperties.getCustomerControllerUrl() + "/" + customerId, Customer.class);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Exception "+e.getMessage() +" Has Occurred in getCustomerDetails Method");

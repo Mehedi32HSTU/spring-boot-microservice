@@ -1,13 +1,19 @@
 package com.javabean.api_gateway.api_key;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Component
 public class ApiKeyFilter extends AbstractGatewayFilterFactory<ApiKeyFilter.Config> {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     public static final String API_KEY_HEADER="API-Key";
 
     @Autowired
@@ -20,27 +26,36 @@ public class ApiKeyFilter extends AbstractGatewayFilterFactory<ApiKeyFilter.Conf
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            String apiKey = exchange.getRequest().getHeaders().getFirst(API_KEY_HEADER);
+            String encryptedApiKey = exchange.getRequest().getHeaders().getFirst(API_KEY_HEADER);
 
-            if (apiKey == null) {
-                System.out.println("API Key Not Found");
-                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                return exchange.getResponse().setComplete();
+            if (encryptedApiKey == null) {
+                logger.info("API Key Not Found.");
+                return prepareErrorResponse(exchange, HttpStatus.UNAUTHORIZED,
+                        "Unauthorized access. API Key Not Found.");
             }
 
             String serviceId = extractServiceIdFromPath(exchange.getRequest().getURI().getPath());
 
             if (serviceId == null) {
-                exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
-                return exchange.getResponse().setComplete();
+                logger.info("Service Name Not Found.");
+                return prepareErrorResponse(exchange, HttpStatus.BAD_REQUEST,
+                        "Invalid Request. Service Name Not Found.");
             }
 
+            String decryptedApiKey = "";
+            try {
+                decryptedApiKey = EncryptionUtil.decrypt(encryptedApiKey);
+            } catch (Exception e) {
+                logger.info("Failed to decrypt the key.");
+                return prepareErrorResponse(exchange, HttpStatus.UNAUTHORIZED,
+                        "Unauthorized access. Invalid API Key.");
+            }
             String expectedApiKey = apiKeyService.getApiKey(serviceId);
 
-            if (!apiKey.equals(expectedApiKey)) {
-                System.out.println("Expected : "+expectedApiKey+", Found : "+apiKey);
-                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                return exchange.getResponse().setComplete();
+            if (!decryptedApiKey.equals(expectedApiKey)) {
+                logger.info("API Key Not Matched.");
+                return prepareErrorResponse(exchange, HttpStatus.UNAUTHORIZED,
+                        "Unauthorized access. API Key does not match.");
             }
 
             return chain.filter(exchange);
@@ -59,5 +74,15 @@ public class ApiKeyFilter extends AbstractGatewayFilterFactory<ApiKeyFilter.Conf
 
     public static class Config {
         // You can put any additional configuration properties here if needed
+    }
+    private Mono<Void> prepareErrorResponse(ServerWebExchange exchange, HttpStatus status, String message) {
+        exchange.getResponse().setStatusCode(status);
+
+        String responseBody = String.format("{\"message\": \"%s\"}", message);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        return exchange.getResponse().writeWith(Mono.just(
+                exchange.getResponse().bufferFactory().wrap(responseBody.getBytes())
+        ));
     }
 }
