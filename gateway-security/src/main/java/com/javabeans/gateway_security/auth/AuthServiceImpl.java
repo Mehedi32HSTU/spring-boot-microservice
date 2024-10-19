@@ -84,9 +84,6 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public ResponseEntity<?> validateToken(TokenValidationRequestDTO tokenValidationRequestDTO) {
         try {
-            logger.info("<<<<<----------- validateToken is called ----------->>>>>");
-            if(Objects.isNull(tokenValidationRequestDTO))
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Token Object Not Found."));
             String token = tokenValidationRequestDTO.getToken();
             boolean isValidToken = jwtService.validateToken(token);
             if (isValidToken) {
