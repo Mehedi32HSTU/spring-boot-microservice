@@ -3,6 +3,7 @@ package com.javabeans.gateway_security.security.users;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -26,4 +27,13 @@ public class UserInfo {
     private String password;
     @ManyToMany(fetch = FetchType.EAGER)
     private List<UserRole> roles = new ArrayList<>();
+    public UserInfo(String firstname, String lastname, String email,
+                    String username, String password, List<UserRole> roles) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+    }
 }

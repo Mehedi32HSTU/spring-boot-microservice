@@ -9,7 +9,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class InitiateData implements CommandLineRunner {
@@ -76,6 +78,27 @@ public class InitiateData implements CommandLineRunner {
 
                 userInfoRepository.save(adminUser);
                 userInfoRepository.save(userInfo);
+
+                // TODO: Insert More Dummy Users
+                List<UserInfo> additionalUsers = Arrays.asList(
+                        new UserInfo("Alice", "Johnson", "alice.johnson@example.com",
+                                "alice.johnson", passwordEncoder.encode("password123"),
+                                Collections.singletonList(userRole)),
+                        new UserInfo("Bob", "Williams", "bob.williams@example.com",
+                                "bob.williams", passwordEncoder.encode("password123"),
+                                Collections.singletonList(userRole)),
+                        new UserInfo("Charlie", "Brown", "charlie.brown@example.com",
+                                "charlie.brown", passwordEncoder.encode("password123"),
+                                Collections.singletonList(userRole)),
+                        new UserInfo("Diana", "Smith", "diana.smith@example.com",
+                                "diana.smith", passwordEncoder.encode("password123"),
+                                Collections.singletonList(userRole)),
+                        new UserInfo("Ethan", "White", "ethan.white@example.com",
+                                "ethan.white", passwordEncoder.encode("password123"),
+                                Collections.singletonList(userRole))
+                );
+
+                userInfoRepository.saveAll(additionalUsers);
 
                 // TODO: Insert menu permission to admin and user (DONE)
 
