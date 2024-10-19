@@ -1,0 +1,9 @@
+service:
+  names:
+    PRODUCT-SERVICE: /product-service
+    ORDER-SERVICE: /order-service
+    CUSTOMER-SERVICE: /customer-service
+    GATEWAY-SECURITY: /gateway-security
+    # Add more services here as needed
+
+
