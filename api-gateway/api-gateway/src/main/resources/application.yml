@@ -33,6 +33,16 @@ spring:
               args:
                 name: customerService
                 fallbackuri: forward:/fallback/customer
+
+        - id: gateway-security
+          uri: lb://GATEWAY-SECURITY
+          predicates:
+            - Path=/gateway-security/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: gatewaySecurity
+                fallbackuri: forward:/fallback/security
     discovery:
       locator:
         enabled: true # Enable service discovery for routing
