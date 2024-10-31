@@ -1,5 +1,6 @@
 package com.javabean.order_service.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,5 +18,10 @@ public class AppConfig {
         requestFactory.setReadTimeout(5000); // Read timeout (5 seconds)
 
         return new RestTemplate(requestFactory);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

@@ -1,19 +1,17 @@
 package com.javabean.order_service.sample.order;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javabean.order_service.config.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -24,6 +22,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     @Lazy
     private RestTemplate restTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
     @Override
     public ResponseEntity<?> getOrderDetailsById(Long orderId) {
         try {
@@ -62,12 +63,30 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> createOrder(Order order) {
         try {
             logger.info("createOrder Method is Called");
-            Customer customer = getCustomerDetails(order.getCustomerId());
+            Customer customer = null;
+            ResponseEntity<String> customerResponse = getCustomerDetails(order.getCustomerId());
+            if (customerResponse.getStatusCode().is2xxSuccessful()) {
+                customer = objectMapper.readValue(customerResponse.getBody(), Customer.class);
+            } else {
+                String errorMessage = (String) customerResponse.getBody();
+                logger.error("Failed to retrieve customer details. Status code: " + customerResponse.getStatusCode() + ", Message: " + errorMessage);
+                return ResponseEntity.status(customerResponse.getStatusCode())
+                        .body(new MessageResponse(errorMessage));
+            }
             if(Objects.isNull(customer))
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new MessageResponse("Customer Not Found for Id : " + order.getCustomerId()));
 
-            Product product = this.getProductDetails(order.getProductName());
+            Product product = null;
+            ResponseEntity<String> productResponse = getProductDetails(order.getProductName());
+            if (productResponse.getStatusCode().is2xxSuccessful()) {
+                product = objectMapper.readValue(productResponse.getBody(), Product.class); // Cast to Customer
+            } else {
+                String errorMessage = (String) productResponse.getBody();
+                logger.error("Failed to retrieve product details. Status code: " + productResponse.getStatusCode() + ", Message: " + errorMessage);
+                return ResponseEntity.status(productResponse.getStatusCode())
+                        .body(new MessageResponse(errorMessage));
+            }
             if(Objects.isNull(product))
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new MessageResponse("Product Not Found for Name : " + order.getProductName()));
@@ -81,22 +100,67 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private Product getProductDetails(String productName) {
+    private ResponseEntity<String> getProductDetails(String productName) {
         try {
-            return  restTemplate.getForObject(applicationProperties.getProductControllerUrl() + "?name=" + productName, Product.class);
+            String url = applicationProperties.getProductControllerUrl() + "?name=" + productName;
+            String token = "eyJhbGciOiJIUzI1NiJ9." +
+                    "eyJmaXJzdG5hbWUiOiJBZG1pbiIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJST0xFX0FETUlOIn1dLCJpZCI6MSwiZW1ha" +
+                    "WwiOiJhZG1pbkBhZG1pbi5jb20iLCJsYXN0bmFtZSI6IkFkbWluIiwidXNlcm5hbWUiOiJkZWZhdWx0X2FkbWluIiwic3" +
+                    "ViIjoiZGVmYXVsdF9hZG1pbiIsImlhdCI6MTcyOTM2MTQwNCwiZXhwIjoxNzI5NDQ3ODA0fQ." +
+                    "lx266ijYTEXvcUCiKtaUJAONe3MWYn2cVSjxIaVlqLM";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", token); // Example header
+            headers.set("service-name", "PRODUCT-SERVICE"); // Add any other custom headers
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            // Make the request using exchange method to capture the full response
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, String.class
+            );
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody()); // Returning the product details in response
+        } catch (HttpClientErrorException e) {
+            return getErrorResponse(e);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("Exception "+e.getMessage() +" Has Occurred in getProductDetails Method");
-            return null;
+            logger.error("Exception " + e.getMessage() + " has occurred in getProductDetails method");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve product details.");
         }
     }
-    private Customer getCustomerDetails(Long customerId) {
+    private ResponseEntity<String> getCustomerDetails(Long customerId) {
         try {
-            return restTemplate.getForObject(applicationProperties.getCustomerControllerUrl() + "/" + customerId, Customer.class);
+            String url = applicationProperties.getCustomerControllerUrl() + "/" + customerId;
+            String token = "eyJhbGciOiJIUzI1NiJ9." +
+                    "eyJmaXJzdG5hbWUiOiJBZG1pbiIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJST0xFX0FETUlOIn1dLCJpZCI6MSwiZW1ha" +
+                    "WwiOiJhZG1pbkBhZG1pbi5jb20iLCJsYXN0bmFtZSI6IkFkbWluIiwidXNlcm5hbWUiOiJkZWZhdWx0X2FkbWluIiwic3" +
+                    "ViIjoiZGVmYXVsdF9hZG1pbiIsImlhdCI6MTcyOTM2MTQwNCwiZXhwIjoxNzI5NDQ3ODA0fQ." +
+                    "lx266ijYTEXvcUCiKtaUJAONe3MWYn2cVSjxIaVlqLM";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", token); // Example header
+            headers.set("service-name", "CUSTOMER-SERVICE"); // Add any other custom headers
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            // Make the request using exchange method to capture the full response
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, String.class
+            );
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody()); // Returning the customer details in response
+        } catch (HttpClientErrorException e) {
+            return getErrorResponse(e);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("Exception "+e.getMessage() +" Has Occurred in getCustomerDetails Method");
-            return null;
+            logger.error("Exception " + e.getMessage() + " has occurred in getCustomerDetails method");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve customer details.");
+        }
+    }
+    private ResponseEntity<String> getErrorResponse(HttpClientErrorException e) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, String> errorResponse = objectMapper.readValue(e.getResponseBodyAsString(), Map.class);
+            String message = errorResponse.get("message"); // Extract the message
+            return ResponseEntity.status(e.getStatusCode()).body(message);
+        } catch (Exception parseException) {
+            logger.error("Failed to parse error response: " + parseException.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
         }
     }
 
